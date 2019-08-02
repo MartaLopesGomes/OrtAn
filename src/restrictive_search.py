@@ -5,14 +5,15 @@
 """
 
 import argparse
-import sys
+import json
 import logging
 import os
-import json
 # import subprocess
 import shutil
-import diamond_mp
+import sys
+
 import aux
+import diamond_mp
 
 # from tool import __version__
 
@@ -127,8 +128,8 @@ def main(args):
         return -1
 
     db_og = {}
-    with open(os.path.join(info['jsons'], 'orthogroups.json'), 'r') as handle:
-        orthogroups = json.load(handle)
+    # with open(os.path.join(info['jsons'], 'orthogroups.json'), 'r') as handle:
+    #     orthogroups = json.load(handle)
     with open(os.path.join(info['jsons'], 'single_orthogroups.json'), 'r') as handle:
         single_orthogroups = json.load(handle)
     with open(os.path.join(info['jsons'], 'associations.json'), 'r') as handle:

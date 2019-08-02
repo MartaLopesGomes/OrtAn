@@ -43,44 +43,6 @@ def get_reps(file, index):
             i += 1
     return res
 
-# TODO: delete this before commit
-
-def get_reps_old(file, index):
-    res = {}
-    with open(file, 'r') as f:
-        lines = f.readlines()
-    i = 0
-    #stop = False
-    i_seq = 0
-    while i < len(lines): # and not stop:
-        if len(index) == 0:
-            #stop = True
-            break
-        if len(lines[i]) > 0:
-            if lines[i][0] == '>':
-                i_seq += 1
-                if i_seq-1 in index:
-                    index.remove(i_seq-1)
-                    is_seq = True
-                    seq = ''
-                    def_line = lines[i]
-                    i += 1
-                    while is_seq and i < len(lines):
-                        if len(lines[i]) == 0:
-                            i += 1
-                        elif lines[i][0] != '>':
-                            seq += lines[i]
-                            i += 1
-                        else:
-                            is_seq = False
-                    res[def_line] = seq
-                else:
-                    i += 1
-            else:
-                i += 1
-        else:
-            i += 1
-    return res
 
 def get_associations_relaxs(dir_in):
     res = {}

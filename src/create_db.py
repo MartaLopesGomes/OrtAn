@@ -5,11 +5,11 @@
 """
 
 import argparse
-import logging
-import sys
-import os
 import json
+import logging
+import os
 import shutil
+import sys
 
 # from tool import __version__
 
@@ -62,17 +62,6 @@ def parse_args(args):
         action='store_const',
         const=True
     )
-    # IS TO MAINTAIN ?????
-    '''
-    parser.add_argument(
-        '--version',
-        action='version',
-        version='Tool {ver}'.format(ver=__version__))
-    parser.add_argument(
-        dest="n",
-        help="n-th Fibonacci number",
-        type=int,
-        metavar="INT")'''
     parser.add_argument(
         '-v',
         '--verbose',

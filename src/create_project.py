@@ -5,16 +5,17 @@
 """
 
 import argparse
+import json
 import logging
 import os
 import sys
-import json
 
 __author__ = "MartaLopesGomes"
 __copyright__ = "MartaLopesGomes"
-# __license__ = "mit"
+__license__ = "mit"
 
 _logger = logging.getLogger(__name__)
+
 
 def parse_args(args):
     """Parse command line parameters
@@ -126,6 +127,7 @@ def check_files(folder):
                 continue
     return files
 
+
 def main(args):
     """Main entry point allowing external calls
 
@@ -189,6 +191,7 @@ def main(args):
     _logger.info('The results of this project will be stored at: {}'.format(WorkingDirectory))
 
     return 0
+
 
 def run():
     """Entry point for console_scripts
