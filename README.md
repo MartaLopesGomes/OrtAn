@@ -31,7 +31,7 @@ Before start running OrthoAnnotator you need to prepare the input files:
 ```/Orthogroup_Sequences/```
 
 
-Note:  You don't need to run the entire workflow of OrthoFinder to get all the required files. You can use the option -og that stops after inferring the orthogroups.
+**Note:**  You don't need to run the entire workflow of OrthoFinder to get all the required files. You can use the option -og that stops after inferring the orthogroups.
 
 
 ### Database Format:
@@ -44,7 +44,7 @@ You can create a database with this format using the [KEGGScraper](https://githu
 
 In this step, OrthoAnnotator receives the information of the input database and creates the working directory structure necessary for the following steps.
 
-Note: you should indicate always the same output/working directory in all the steps.
+**Note:** you should indicate always the same output/working directory in all the steps.
 
 Run ```create_project -h``` to see the usage of this command.
 
@@ -70,13 +70,13 @@ Run ```restrictive_search -h``` to see the usage of this command.
 In this step, the tool uses the data created before to return the annotation of the sequences present in the orthogroups.
 Here you can decide the thresholds of the parameters that will give you the annotation of the unknown sequences.
 
-% Identity - the percentage of identical matches in the range of alignment. Default: 95.
+**% Identity** - the percentage of identical matches in the range of alignment. Default: 95.
 
-% Positive Matches - percent of identical matches + positive matches in the range of alignment.Default: 99.
+**% Positive Matches** - percent of identical matches + positive matches in the range of alignment.Default: 99.
 
-% Query Coverage - percent of the query sequence involved in the range of alignment.Default: 90.
+**% Query Coverage** - percent of the query sequence involved in the range of alignment.Default: 90.
 
-% Target Coverage - percent of the target sequence (sequence in the database) involved in the range of alignment.Default: 90.
+**% Target Coverage** - percent of the target sequence (sequence in the database) involved in the range of alignment.Default: 90.
 
 Run ```annotation -h``` to see the usage of this command.
 
@@ -126,7 +126,7 @@ The tool should be ready to use.
 
 ## Run the pipeline
 
-Note: You can try this with the example data.
+**Note:** You can try this with the example data.
 
 Define the important paths you need:
 
@@ -162,7 +162,7 @@ Run the relaxed_search step, using only 2 cores to run, an identity cutoff of 80
 relaxed_search -wd $work_dir -of $orthof -t 2 -ident 80
 ```
 
-Note: Number of threads should not exceed the one available in your machine. If you don't specify the number the tool will use all the available cores in the machine.
+**Note:** Number of threads should not exceed the one available in your machine. If you don't specify the number the tool will use all the available cores in the machine.
 
 Run the restrictive_search step using 2 cores to run.
 
