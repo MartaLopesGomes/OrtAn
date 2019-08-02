@@ -22,13 +22,13 @@ Before start running OrthoAnnotator you need to prepare the input files:
 
 ### OrthoFinder required files and directories:
 
-/Orthogroups/Orthogroups.txt
+```/Orthogroups/Orthogroups.txt```
 
-/WorkingDirectory/SpeciesIDs.txt
+```/WorkingDirectory/SpeciesIDs.txt```
 
-/WorkingDirectory/SequenceIDs.txt
+```/WorkingDirectory/SequenceIDs.txt```
 
-/Orthogroup_Sequences/
+```/Orthogroup_Sequences/```
 
 
 Note:  You don't need to run the entire workflow of OrthoFinder to get all the required files. You can use the option -og that stops after inferring the orthogroups.
