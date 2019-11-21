@@ -201,9 +201,4 @@ From the annotation step we get 6 different text files:
 ```/Results/Species_Annotation.csv``` - This file shows which functions are present in which species (1 - at least one sequence annotated to the function, 0 - no sequences annotated to the function).
 
 
-Note
-====
-
-This project has been set up using PyScaffold 3.1. For details and usage
-information on PyScaffold see https://pyscaffold.org/.
 
