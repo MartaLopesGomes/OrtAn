@@ -5,15 +5,15 @@
 """
 
 import argparse
-import sys
-import logging
-import os
 import json
-import shutil
-import dictionary_creator
-import aux
+import logging
 import math
+import os
+import shutil
+import sys
 from random import sample
+
+import aux
 import diamond_mp
 
 #from tool import __version__
@@ -57,7 +57,7 @@ def parse_args(args):
         '--identity',
         dest='ident',
         type=int,
-        help='Identity threshold to filter the diamond results'
+        help='Identity threshold to filter the diamond results. DEFAULT: 50'
     )
     parser.add_argument(
         '-t',
@@ -172,15 +172,17 @@ def main(args):
         return -1
 
     # Store OrthoFinder information in json dics
-    orthogroups, single_orthogroups = dictionary_creator.orthogroups_to_dic(os.path.join(args.orthofinder, 'Orthogroups/Orthogroups.txt'))
+    orthogroups, single_orthogroups = aux.orthogroups_to_dic(
+        os.path.join(args.orthofinder, 'Orthogroups/Orthogroups.txt'))
+    info['total_og'] = len(orthogroups) + len(single_orthogroups)
     with open(os.path.join(info['jsons'], 'orthogroups.json'), 'w') as handle:
         json.dump(orthogroups, handle)
     with open(os.path.join(info['jsons'], 'single_orthogroups.json'), 'w') as handle:
         json.dump(single_orthogroups, handle)
-    speciesIDs = dictionary_creator.speciesIDs_to_dic(os.path.join(args.orthofinder, 'WorkingDirectory/SpeciesIDs.txt'))
+    speciesIDs = aux.speciesIDs_to_dic(os.path.join(args.orthofinder, 'WorkingDirectory/SpeciesIDs.txt'))
     with open(os.path.join(info['jsons'], 'speciesIDs.json'), 'w') as handle:
         json.dump(speciesIDs, handle)
-    sequencesIDs = dictionary_creator.sequencesIDs_to_dic(os.path.join(args.orthofinder, 'WorkingDirectory/SequenceIDs.txt'))
+    sequencesIDs = aux.sequencesIDs_to_dic(os.path.join(args.orthofinder, 'WorkingDirectory/SequenceIDs.txt'))
     with open(os.path.join(info['jsons'], 'sequencesIDs.json'), 'w') as handle:
         json.dump(sequencesIDs, handle)
 
@@ -224,7 +226,8 @@ def main(args):
     if args.ident:
         ident_t = str(args.ident)
     else:
-        ident_t = '80'
+        ident_t = '50'
+
 
     # Prepare pairs and parameters for DIAMOND runs
     pairs = []
@@ -233,13 +236,14 @@ def main(args):
         pairs.append([query_file, os.path.join(info['db_dir'], file)])
     output = info['diamond_res_relax']
     db_storage = info['diamond_dbs']
+
     if args.delete:
         del_db = True
     else:
         del_db = False
 
     # DIAMOND runs
-    diamond_mp.run(pairs, output, db_storage, cpu, ident_t,
+    diamond_mp.run(True, pairs, output, db_storage, cpu, ident_t,
                    create_db=True, create_query=False, delete_db=del_db, delete_query=False)
 
     # Get associations between OG and functions
@@ -255,6 +259,7 @@ def main(args):
         for assoc in associations:
             for func in associations[assoc]:
                 f.write(assoc + '\t' + func + '\n')
+
     # Store DIAMOND results for single Orthogroups
     single_og_res = {}
     for og in single_orthogroups:
@@ -264,6 +269,7 @@ def main(args):
         json.dump(single_og_res, handle)
 
     # Delete DIAMOND result files
+
     to_delete = [x for x in os.listdir(info['diamond_res_relax']) if os.path.isfile(
         os.path.join(info['diamond_res_relax'], x))]
     for file in to_delete:

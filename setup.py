@@ -26,14 +26,13 @@ if __name__ == "__main__":
           name='OrthoAnnotator',
           version='0.01',
           description='Annotation tool for OrthoFinder orthogroups.',
-          licence="MIT", # Check license
+          licence="MIT",  # Check license
           long_description=long_description,
           author='Marta Lopes Gomes',
           author_email='martalopesgomes@hotmail.com',
           url='',
           # Commands
-          scripts=['src/dictionary_creator.py',
-                   'src/aux.py', 'src/diamond_mp.py'],
+          scripts=['src/aux.py', 'src/diamond_mp.py'],
           # classifiers=[],
           packages=find_packages(),
           install_requires=[],

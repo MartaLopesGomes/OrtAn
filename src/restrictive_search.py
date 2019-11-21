@@ -172,9 +172,12 @@ def main(args):
                 query_files_ids['_'.join(db_og[db])] = str(id_count)
             dif_results_files.append(query_files_ids[ogs_name] + '|' + db)
             id_count += 1
-    diamond_mp.run(pairs, info['diamond_res_rest'], info['diamond_dbs'], cpu, ident_t,
-                   create_db=info['need_to_create_db'], create_query=True, delete_db=True, delete_query=False,
+    diamond_mp.run(False, pairs, info['diamond_res_rest'], info['diamond_dbs'], cpu, ident_t,
+                   create_db=info['need_to_create_db'], create_query=True, delete_db=False, delete_query=False,
                    query_dir_in=info['og_sequences_dir'], query_dir_out=info['data'], ids_dic=query_files_ids)
+    # diamond_mp.run(pairs, info['diamond_res_rest'], info['diamond_dbs'], cpu, ident_t,
+    #               create_db=True, create_query=True, delete_db=True, delete_query=False,
+    #               query_dir_in=info['og_sequences_dir'], query_dir_out=info['data'], ids_dic=query_files_ids)
 
     # Analise results
     res = {}

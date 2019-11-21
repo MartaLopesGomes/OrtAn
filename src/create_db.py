@@ -41,7 +41,7 @@ def parse_args(args):
     )
     group.add_argument(
         '-o',
-        '-out',
+        '--out',
         dest="output",
         help="Output directory to create new database (initial database + new annotated sequences)."
     )

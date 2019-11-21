@@ -4,12 +4,13 @@
 
 """
 
-import subprocess as sp
+import logging
 import multiprocessing as mp
+import os
+import subprocess as sp
+
 # import time
 import aux
-import logging
-import os
 
 _logger = logging.getLogger(__name__)
 
@@ -41,7 +42,8 @@ def create_query_(og_list, og_dir, output_dir, query_name):
     return path
 
 
-def diamond(query, db_in, db_out, output, ident, create_db, create_query, delete_db, delete_query, query_dir_in, query_dir_out, query_file_name=''):
+def diamond(relax, query, db_in, db_out, output, ident, create_db, create_query, delete_db, delete_query, query_dir_in,
+            query_dir_out, query_file_name=''):
     # Check/Create DB
     if create_db:
         db_name = os.path.basename(db_in).split('.')[0]
@@ -68,9 +70,22 @@ def diamond(query, db_in, db_out, output, ident, create_db, create_query, delete
 
     _logger.info('Starting DIAMOND search for: {} and {}'.format(db_name, os.path.basename(query).split('.')[0]))
 
-    sp.call(['diamond', 'blastp', '-q', n_query, '--db', db_out, '--out', output, '--outfmt', '6', 'qseqid', 'sseqid',
-             'pident', 'ppos', 'qlen', 'slen', 'qstart', 'qend', 'sstart', 'send', '--id', ident],
-            stderr=sp.DEVNULL, stdin=sp.DEVNULL, stdout=sp.DEVNULL)
+    # Relaxed Search
+    if relax:
+        sp.call(
+            ['diamond', 'blastp', '-q', n_query, '--db', db_out, '--out', output, '--outfmt', '6', 'qseqid', 'sseqid',
+             'pident', 'ppos', 'qlen', 'slen', 'qstart', 'qend', 'sstart', 'send', '--id', ident, '--query-cover', '30',
+             '--subject-cover', '30', '--min-score', '0', '--freq-sd', '1000000000', '-e', '1000000',
+             '--hit-score', '0', '-k', '0'], stderr=sp.DEVNULL, stdin=sp.DEVNULL, stdout=sp.DEVNULL)
+
+
+    # Restrictive search
+    else:
+        sp.call(
+            ['diamond', 'blastp', '-q', n_query, '--db', db_out, '--out', output, '--outfmt', '6', 'qseqid', 'sseqid',
+             'pident', 'ppos', 'qlen', 'slen', 'qstart', 'qend', 'sstart', 'send', '--id', ident, '--query-cover', '40',
+             '--subject-cover', '40', '--min-score', '0', '--freq-sd', '1000000000', '-e', '1000000',
+             '--hit-score', '0', '-k', '1'], stderr=sp.DEVNULL, stdin=sp.DEVNULL, stdout=sp.DEVNULL)
 
     # Check if the output for this diamond run is available
     try:
@@ -97,7 +112,7 @@ def diamond(query, db_in, db_out, output, ident, create_db, create_query, delete
     return 0
 
 
-def run(pairs, output, db_storage, n_cpu, ident, create_db, create_query, delete_db, delete_query,
+def run(relax, pairs, output, db_storage, n_cpu, ident, create_db, create_query, delete_db, delete_query,
         query_dir_in='', query_dir_out='', ids_dic={}):
     # Get number of cpu to use
     max_cpu = mp.cpu_count()
@@ -126,13 +141,16 @@ def run(pairs, output, db_storage, n_cpu, ident, create_db, create_query, delete
             query_name = pair[0].split('/')[-1].split('.')[0]
         pair.extend([db_out, os.path.join(output, query_name + '|' + db_name), ident,
                      create_db, create_query, delete_db, delete_query, query_dir_in, query_dir_out, query_name])
+        # not optimal - should change
+        pair.insert(0, relax)
 
     # Run DIAMOND sequentially in case we have just on pair to run or we don't have enough cores to run in parallel
     if len(pairs) == 1 or n_cpu == 1:
         _logger.debug('Running DIAMOND sequentially.')
         for pair in pairs:
-            query, db_in, db_out, output, ident, create_db, create_query, delete_db, delete_query, query_dir_in, query_dir_out, query_name = pair
-            diamond(query, db_in, db_out, output, ident, create_db, create_query, delete_db, delete_query, query_dir_in, query_dir_out, query_name)
+            relax, query, db_in, db_out, output, ident, create_db, create_query, delete_db, delete_query, query_dir_in, query_dir_out, query_name = pair
+            diamond(relax, query, db_in, db_out, output, ident, create_db, create_query, delete_db, delete_query,
+                    query_dir_in, query_dir_out, query_name)
     else:
         _logger.debug('Running DIAMOND in parallel.')
         pool = mp.Pool(n_cpu)

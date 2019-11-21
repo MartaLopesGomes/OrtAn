@@ -5,10 +5,12 @@
 """
 
 import argparse
-import logging
-import sys
-import os
 import json
+import logging
+import os
+import sys
+
+from aux import overview
 
 # from tool import __version__
 
@@ -38,26 +40,31 @@ def parse_args(args):
         help="Working Directory",
         required=True
     )
+    parser.add_argument('-s',
+                        '--score',
+                        dest='score',
+                        type=float,
+                        help='score threshold to filter the diamond results. Default: 90')
     parser.add_argument(
         '-ident',
         '--identity',
         dest='ident',
         type=float,
-        help='Identity threshold to filter the diamond results. Default: 95'
+        help='Identity threshold to filter the diamond results.'
     )
     parser.add_argument(
         '-qc',
         '--queryCoverage',
         dest='query_cov',
         type=float,
-        help='Query coverage threshold to filter the diamond results. Default: 90'
+        help='Query sequence coverage threshold to filter the diamond results.'
     )
     parser.add_argument(
-        '-tc',
-        '--targetCoverage',
-        dest='target_cov',
+        '-sc',
+        '--subjectCoverage',
+        dest='subject_cov',
         type=float,
-        help='Target coverage threshold to filter the diamond results. Default: 90'
+        help='Subject sequence coverage threshold to filter the diamond results.'
     )
     parser.add_argument(
         '-ppos',
@@ -65,7 +72,7 @@ def parse_args(args):
         dest='ppos',
         type=float,
         help='Percentage of positive matches threshold to filter the diamond results (should be higher than identity '
-             'threshould). Default: 99'
+             'threshould).'
     )
     parser.add_argument(
         '-l',
@@ -135,27 +142,32 @@ def main(args):
 
     # Get the thresholds to use
     _logger.debug('Setting the thresholds to use.')
+    if args.score:
+        score_t = args.score
+    else:
+        score_t = 90.0
+    _logger.debug('Score set to {}.'.format(str(score_t)))
     if args.ident:
         ident_t = args.ident
     else:
-        ident_t = 95.0
-    if ident_t < float(info['ident_rest']):
-        ident_t = float(info['ident_rest'])
+        ident_t = 0
+    # if ident_t < float(info['ident_rest']):
+    #     ident_t = float(info['ident_rest'])
     _logger.debug('Identity set to {}.'.format(str(ident_t)))
     if args.query_cov:
         q_cov_t = args.query_cov
     else:
-        q_cov_t = 90.0
-    _logger.debug('Query coverage set to {}.'.format(str(q_cov_t)))
-    if args.target_cov:
-        t_cov_t = args.target_cov
+        q_cov_t = 0
+    _logger.debug('Query sequence coverage set to {}.'.format(str(q_cov_t)))
+    if args.subject_cov:
+        s_cov_t = args.subject_cov
     else:
-        t_cov_t = 90.0
-    _logger.debug('Target coverage set to {}.'.format(str(t_cov_t)))
+        s_cov_t = 0
+    _logger.debug('Subject sequence coverage set to {}.'.format(str(s_cov_t)))
     if args.ppos:
         ppos_t = args.ppos
     else:
-        ppos_t = 99.0
+        ppos_t = 0
     _logger.debug('Percentage of positive matches set to {}.'.format(str(ppos_t)))
 
     _logger.debug('Open results from previous steps.')
@@ -176,22 +188,30 @@ def main(args):
     _logger.debug('Filtering and organization of the results.')
 
     # Choose best hit for repeated querys (note that querys can only be repeated inside the one OG)
+
     for og in rest_res:
         querys = {}
         # I need the index of the hit to remove in case is necessary
-        hits = rest_res[og].copy()
+        # hits = rest_res[og].copy()
+        index_to_keep = []
         for i in range(len(rest_res[og])):
             query = rest_res[og][i][1]
             # identity will be the tiebreaker
             ident = float(rest_res[og][i][3])
             if query not in querys:
                 querys[query] = [i, ident]
-            else:
-                # in case the current hit has a better value, change the hit
-                if querys[query][1] < ident:
-                    del hits[querys[query][0]]
-                    querys[query] = [i, ident]
-        rest_res[og] = hits
+                index_to_keep.append(i)
+            # in case the current hit has a better value, change the hit
+            elif querys[query][1] < ident:
+                # del hits[querys[query][0]]
+                index_to_keep.remove(querys[query][0])
+                index_to_keep.append(i)
+                querys[query] = [i, ident]
+
+        keep_hits = []
+        for i in index_to_keep:
+            keep_hits.append(rest_res[og][i])
+        rest_res[og] = keep_hits
 
     prot_func = {}
     func_prot = {}
@@ -204,9 +224,9 @@ def main(args):
         for hit in rest_res[og]:
             db, query, target, ident, ppos, qlen, slen, qstart, qend, sstart, send = hit
             prot_func, func_prot, func_og = filter(db, og, query, target, float(ident), float(ppos), int(qlen),
-                                                                int(slen), int(qstart), int(qend),
-                                                                int(sstart), int(send), prot_func, func_prot, func_og,
-                                                                ident_t, ppos_t, q_cov_t, t_cov_t)
+                                                   int(slen), int(qstart), int(qend),
+                                                   int(sstart), int(send), prot_func, func_prot, func_og,
+                                                   ident_t, ppos_t, q_cov_t, s_cov_t, score_t)
     # Add results of single og
     for og in single_res:
         og_prot_func[og] = {}
@@ -216,9 +236,9 @@ def main(args):
             db, q, target, ident, ppos, qlen, slen, qstart, qend, sstart, send = hit
             query = orthogroups[og][0]
             prot_func, func_prot, func_og = filter(db, og, query, target, float(ident), float(ppos), int(qlen),
-                                                                 int(slen), int(qstart), int(qend),
-                                                                 int(sstart), int(send), prot_func, func_prot, func_og,
-                                                                 ident_t, ppos_t, q_cov_t, t_cov_t)
+                                                   int(slen), int(qstart), int(qend),
+                                                   int(sstart), int(send), prot_func, func_prot, func_og,
+                                                   ident_t, ppos_t, q_cov_t, s_cov_t, score_t)
 
     # add total number of proteins to og and get og_func_prot to use on create_db
     og_to_del = []
@@ -312,16 +332,26 @@ def main(args):
             different[og].remove('Unassigned')
             different[og].remove('Total')
 
-    with open(os.path.join(info['results'], 'COG.txt'), 'w') as f:
+    with open(os.path.join(info['results'], 'ConOG.txt'), 'w') as f:
         for og in same:
             f.write(og + '\t' + same[og][0] + '\n')
 
-    with open(os.path.join(info['results'], 'DOG.txt'), 'w') as f:
+    with open(os.path.join(info['results'], 'DivOG.txt'), 'w') as f:
         for og in different:
             f.write(og)
             for func in different[og]:
                 f.write('\t' + func)
             f.write('\n')
+
+    # Overview file
+    # total og
+    total_og = info['total_og']
+    # total kos
+    total_kos = len(info['db_files'])
+    # associations
+    with open(os.path.join(info['jsons'], 'associations.json'), 'r') as handle:
+        associations = json.load(handle)
+    overview(total_og, total_kos, associations, same, different, os.path.join(info['results'], 'Overview.csv'))
 
     # Update information general info dic
     info['annotation'] = True
@@ -338,10 +368,13 @@ def get_coverage(end, start, lenght):
     return ((end-start)/lenght)*100
 
 
-def filter(func, og, query, target, ident, ppos, qlen, slen, qstart, qend, sstart, send, prot_func, func_prot, func_og, ident_t, ppos_t, q_cov_t, t_cov_t):
+def filter(func, og, query, target, ident, ppos, qlen, slen, qstart, qend, sstart, send, prot_func, func_prot, func_og,
+           ident_t, ppos_t, q_cov_t, s_cov_t, score_t):
     q_cov = get_coverage(qend, qstart, qlen)
-    t_cov = get_coverage(send, sstart, slen)
-    if ident >= ident_t and ppos >= ppos_t and q_cov >= q_cov_t and t_cov >= t_cov_t:
+    s_cov = get_coverage(send, sstart, slen)
+    mean = ident + ppos + q_cov + s_cov
+    mean = mean / 4
+    if mean >= score_t and ident >= ident_t and ppos >= ppos_t and q_cov >= q_cov_t and s_cov >= s_cov_t:
         if query not in prot_func:
             prot_func[query] = set()
         prot_func[query].add(func)
