@@ -359,6 +359,26 @@ def main(args):
     with open(os.path.join(info['jsons'], 'general_info.json'), 'w') as handle:
         json.dump(info, handle)
 
+    # complete info table from db with orthogroups
+    try:
+        with open(os.path.join(info['db_dir'], 'info_db.json'), 'r') as handle:
+            db_info = json.load(handle)
+
+        for ko in db_info:
+            # Get associated OG
+            for og in func_og[ko]:
+                for line in db_info[ko]:
+                    line = [og] + [line]
+
+        with open(os.path.join(info['results'], 'orthogroups_more_info_db.csv'), 'w') as f:
+            f.write('OG;KO;KO name;Ec number;Reaction')
+            for ko in info:
+                for line in info[ko]:
+                    f.write('\n' + ';'.join(line))
+
+    except IOError:
+        pass
+
     _logger.info('Done!')
 
     return 0

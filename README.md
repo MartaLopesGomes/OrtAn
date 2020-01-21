@@ -1,4 +1,4 @@
-# OrthoAnnotator
+# OrtAn
 
 This tool uses [OrthoFinder](https://github.com/davidemms/OrthoFinder) output data to perform the annotation of the created Orthogroups based on a given database.
 
@@ -16,7 +16,7 @@ Python 3
 
 # Pipeline
 
-Before start running OrthoAnnotator you need to prepare the input files:
+Before start running OrtAn you need to prepare the input files:
 - Run OrthoFinder with the input genomes;
 - Prepare the database with the necessary format.
 
@@ -37,12 +37,12 @@ Before start running OrthoAnnotator you need to prepare the input files:
 ### Database Format:
 
 The database should be organized in a folder where each fasta file contain a set of (amino acid) sequences annotated for the same function.
-You can create a database with this format using the [KEGGScraper](https://github.com/MartaLopesGomes/KEGGScraper) tool (Collect information from a given pathway or set of IDs from the KEGG database).
+You can create a database with this format using the [OrtScraper](https://github.com/MartaLopesGomes/OrtScraper) tool (Collect information from a given pathway or set of IDs from the KEGG database).
 
 
 ## Create Project
 
-In this step, OrthoAnnotator receives the information of the input database and creates the working directory structure necessary for the following steps.
+In this step, OrtAn receives the information of the input database and creates the working directory structure necessary for the following steps.
 
 **Note:** you should indicate always the same output/working directory in all the steps.
 
@@ -60,7 +60,7 @@ Run ```relaxed_search -h``` to see the usage of this command.
 
 ## Restrictive Search
 
-In this step, OrthoAnnotator performs a restrictive search only between the orthogroups and groups of functions from the database that we find to be possibly related in the first step.
+In this step, OrtAn performs a restrictive search only between the orthogroups and groups of functions from the database that we find to be possibly related in the first step.
 
 Run ```restrictive_search -h``` to see the usage of this command.
 
@@ -109,10 +109,10 @@ Activate the virtual environment.
 source orthoAnnotation/bin/activate
 ```
 
-Then move to the folder where the file setup.py from the OrthoAnnotation tool is located.
+Then move to the folder where the file setup.py from the OrtAn tool is located.
 
 ```bash
-cd /path/to/OrthoAnnotation
+cd /path/to/OrtAn
 ```
 
 Run the command:
@@ -192,9 +192,9 @@ From the annotation step we get 6 different text files:
 
 ```/Results/Annotation_Protein_Function.txt``` - Shows in the first column the sequences and the second the Functions for which the sequences were annotated for (one association per line).
 
-```/Results/COG.txt``` - Consistent Orthogroups (Orthogroups where all the sequences were annotated to the same function). The function is also indicated.
+```/Results/ConOG.txt``` - Consistent Orthogroups (Orthogroups where all the sequences were annotated to the same function). The function is also indicated.
 
-```/Results/DOG.txt``` - Divergent Orthogroups (Orthogroups where not all the sequences were annotated to the same function). This means that the orthogroup could have sequences that were not annotated to any function or sequences annotated to different functions. The functions are also indicated in the file.
+```/Results/DivOG.txt``` - Divergent Orthogroups (Orthogroups where not all the sequences were annotated to the same function). This means that the orthogroup could have sequences that were not annotated to any function or sequences annotated to different functions. The functions are also indicated in the file.
 
 ```/Results/Orthogroups_Annotation.csv``` - This file shows how many sequences in each Orthogroup were annotated and to which function.
 
